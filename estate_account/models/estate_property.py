@@ -7,7 +7,7 @@ class EstateProperty(models.Model):
 
     def action_sell_property(self):
         for record in self:
-            # Creates an Invoice with a 6% price increase and an added flat administrative fee
+            # Creates an Invoice for 6% of the original price and an added flat administrative fee
             move = self.env['account.move'].create({
                 'partner_id': record.buyer_id.id,
                 'move_type': 'out_invoice',
