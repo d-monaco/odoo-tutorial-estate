@@ -2,7 +2,7 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
-from odoo import fields, models, api, exceptions, tools
+from odoo import fields, models, api, exceptions, tools, _
 from odoo.tools import float_utils
 
 class EstatePropertyOffer(models.Model):
@@ -81,7 +81,7 @@ class EstatePropertyOffer(models.Model):
                 target_property.best_price,
                 vals['price'],
                 precision_digits=2) == 1:
-                    raise exceptions.UserError("Can't create offers lower than current highest offer")
+                    raise exceptions.UserError(_("Can't create offers lower than current highest offer"))
             target_property.state = 'offer_received'
             output = super().create(vals)
         return output   
@@ -99,7 +99,7 @@ class EstatePropertyOffer(models.Model):
                 record.property_id.selling_price = record.price
                 record.property_id.state = 'offer_accepted'
             else:
-                raise exceptions.UserError("Can't accept offer, property already has accepted offer")
+                raise exceptions.UserError(_("Can't accept offer, property already has accepted offer"))
         return True
 
     def action_refuse_offer(self):
@@ -107,5 +107,5 @@ class EstatePropertyOffer(models.Model):
             if record.state != 'accepted':
                 record.state = 'refused'
             else:
-                raise exceptions.UserError("Can't change state of offer")
+                raise exceptions.UserError(_("Can't change state of offer"))
         return True

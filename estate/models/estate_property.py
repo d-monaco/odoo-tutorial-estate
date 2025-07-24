@@ -3,7 +3,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 
-from odoo import fields, models, api, exceptions, tools
+from odoo import fields, models, api, exceptions, tools, _
 
 
 
@@ -19,9 +19,13 @@ class EstateProperty(models.Model):
 
     name = fields.Char(required=True)
     description = fields.Text()
+    company_id = fields.Many2one("res.company",
+        string="Agency",
+        required=True,
+        default=lambda self: self.env.user.company_id.id
+    )
 
     property_type_id = fields.Many2one("estate.property.type", string="Property Type")
-
     property_tag_ids = fields.Many2many("estate.property.tag", string="Property Tags")
 
     buyer_id = fields.Many2one("res.partner",
@@ -31,6 +35,7 @@ class EstateProperty(models.Model):
     )
     salesperson_id = fields.Many2one("res.users",
         string="Salesperson",
+        domain="[('company_ids', 'any', [('id', '=', company_id)])]",
         default=lambda self: self.env.user
     )
 
@@ -159,7 +164,7 @@ class EstateProperty(models.Model):
         for record in self:
             if not tools.float_utils.float_is_zero(record.selling_price, precision_digits=2):
                 if tools.float_utils.float_compare(record.expected_price * 90/100, record.selling_price, precision_digits=2) == 1:
-                    raise exceptions.ValidationError("The selling price need to be at least 90% of the expected price")
+                    raise exceptions.ValidationError(_("The selling price need to be at least 90% of the expected price"))
 
 
 
@@ -171,7 +176,7 @@ class EstateProperty(models.Model):
     def unlink(self):
         for record in self:
             if record.state != 'cancelled' and record.state != 'new':
-                raise exceptions.UserError("Can't delete property that is not New or Cancelled")
+                raise exceptions.UserError(_("Can't delete property that is not New or Cancelled"))
         return super().unlink()
 
     # -------------------------------------------------------------------------
@@ -182,11 +187,11 @@ class EstateProperty(models.Model):
         for record in self:
             if record.state != 'sold' and record.state != 'cancelled':
                 if record.state != 'offer_accepted':
-                    raise exceptions.UserError("Can't sell property without an accepted offer")
+                    raise exceptions.UserError(_("Can't sell property without an accepted offer"))
                 else:
                     record.state = 'sold'
             else:
-                raise exceptions.UserError("Can't change state of property")
+                raise exceptions.UserError(_("Can't change state of property"))
         return True
 
     def action_cancel_property(self):
@@ -194,6 +199,6 @@ class EstateProperty(models.Model):
             if record.state != 'sold' and record.state != 'cancelled':
                 record.state = 'cancelled'
             else:
-                raise exceptions.UserError("Can't change state of property")
+                raise exceptions.UserError(_("Can't change state of property"))
         return True
 

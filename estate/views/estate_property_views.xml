@@ -87,6 +87,7 @@
                         <page string="Other Info">
                             <group>
                                 <field name="salesperson_id" readonly="is_readonly"/>
+                                <field name="company_id" readonly="is_readonly"/>
                                 <field name="buyer_id" readonly="True"/>
                             </group>
                         </page>
